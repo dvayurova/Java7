@@ -33,7 +33,7 @@ public class App {
             createObject();
             System.out.println("Object created: " + objectInfo());
             updateObject();
-            System.out.print("Object updated: " + objectInfo());
+            System.out.println("Object updated: " + objectInfo());
             callMethod();
         } catch (InvocationTargetException | IllegalAccessException e) {
             System.out.println("error: " + e.getMessage());
@@ -88,7 +88,7 @@ public class App {
     private static String getMethodParameters(Method method) {
         StringBuilder params = new StringBuilder("(");
         Class<?>[] parametersTypes = method.getParameterTypes();
-        for (int i = 0; i < parametersTypes.length; i++){
+        for (int i = 0; i < parametersTypes.length; i++) {
             params.append(parametersTypes[i].getTypeName() + ", ");
         }
         if (params.length() >= 2) {
@@ -152,29 +152,29 @@ public class App {
         }
     }
 
-        private static String objectInfo () throws IllegalAccessException {
-            StringBuilder info = new StringBuilder(getClassName(object.getClass().getName()) + "[");
-            for (Field field : fields) {
-                String fieldName = field.getName();
-                if (getFieldType(field).equals("String")) {
-                    info.append(fieldName + "=" + "\'" + field.get(object) + "\', ");
-                } else {
-                    info.append(fieldName + "=" + field.get(object) + ", ");
-                }
+    private static String objectInfo() throws IllegalAccessException {
+        StringBuilder info = new StringBuilder(getClassName(object.getClass().getName()) + "[");
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            if (getFieldType(field).equals("String")) {
+                info.append(fieldName + "=" + "\'" + field.get(object) + "\', ");
+            } else {
+                info.append(fieldName + "=" + field.get(object) + ", ");
             }
-            if (info.length() >= 2) {
-                info.delete(info.length() - 2, info.length());
-            }
-            info.append("]");
-            return info.toString();
         }
+        if (info.length() >= 2) {
+            info.delete(info.length() - 2, info.length());
+        }
+        info.append("]");
+        return info.toString();
+    }
 
     private static void updateObject() throws IllegalAccessException {
         System.out.println("---------------------\n" +
                 "Enter name of the field for changing:");
         String fieldName = scanner.nextLine();
-        for(Field field : fields){
-            if(field.getName().equals(fieldName)){
+        for (Field field : fields) {
+            if (field.getName().equals(fieldName)) {
                 setField(field, true);
             }
         }
@@ -184,12 +184,13 @@ public class App {
         System.out.println("---------------------\n" +
                 "Enter name of the method for call:");
         String methodName = scanner.nextLine();
-        for (Method method : methods){
+        for (Method method : methods) {
             String fullMethodName = methodName + getMethodParameters(method);
-            if(fullMethodName.startsWith(method.getName())){
+            if (fullMethodName.startsWith(method.getName())) {
                 Object[] params = getParametersForMethodCall(method);
-                Object result =  method.invoke(object, params);
-                System.out.println("Method returned:\n" + result);
+                Object result = method.invoke(object, params);
+                if (!method.getReturnType().getName().contains("void"))
+                    System.out.println("Method returned:\n" + result);
                 return;
             }
         }
@@ -199,16 +200,27 @@ public class App {
     private static Object[] getParametersForMethodCall(Method method) throws InvocationTargetException, IllegalAccessException {
         Class<?>[] parametersTypes = method.getParameterTypes();
         Object[] parameters = new Object[parametersTypes.length];
-        for (int i = 0; i < parametersTypes.length; i++){
+        for (int i = 0; i < parametersTypes.length; i++) {
             Class<?> parameterType = parametersTypes[i];
-            if(parameterType.equals(int.class)){
+            if (parameterType.equals(int.class) || parameterType.equals(Integer.class)) {
                 System.out.println("Enter int value:");
                 parameters[i] = scanner.nextInt();
+            } else if (parameterType.equals(String.class)) {
+                System.out.println("Enter int value:");
+                parameters[i] = scanner.nextLine();
+            } else if (parameterType.equals(double.class) || parameterType.equals(Double.class)) {
+                System.out.println("Enter int value:");
+                parameters[i] = scanner.nextDouble();
+            } else if (parameterType.equals(long.class) || parameterType.equals(Long.class)) {
+                System.out.println("Enter int value:");
+                parameters[i] = scanner.nextLong();
+            } else if (parameterType.equals(boolean.class) || parameterType.equals(Boolean.class)) {
+                System.out.println("Enter int value:");
+                parameters[i] = scanner.nextBoolean();
             }
-
         }
         return parameters;
     }
 
 
-    }
+}

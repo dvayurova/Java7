@@ -22,6 +22,10 @@ public class Car {
         return this.year > year;
     }
 
+    public void printCarInfo(){
+        System.out.println(toString());
+    }
+
     @Override
     public String toString() {
         return "Car{" +
