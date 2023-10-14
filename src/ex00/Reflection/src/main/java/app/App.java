@@ -31,14 +31,14 @@ public class App {
         printMethods();
         try {
             createObject();
-            System.out.print("Object created: " + objectInfo());
+            System.out.println("Object created: " + objectInfo());
             updateObject();
             System.out.print("Object updated: " + objectInfo());
-        } catch (IllegalAccessException e) {
+            callMethod();
+        } catch (InvocationTargetException | IllegalAccessException e) {
             System.out.println("error: " + e.getMessage());
         }
     }
-
 
     private static void printClasses() {
         System.out.println("Classes:");
@@ -80,17 +80,16 @@ public class App {
             if (isInheritedObjectMethods(methodName)) continue;
             String type = method.getReturnType().getName();
             type = type.contains("lang.") ? type.substring(type.indexOf("lang.") + 5) : type;
-            System.out.println("\t\t" + type + " " + methodName + getMethodParameters(method.getParameters(), type));
+            System.out.println("\t\t" + type + " " + methodName + getMethodParameters(method));
         }
         System.out.println("---------------------");
     }
 
-    private static String getMethodParameters(Parameter[] parameters, String type) {
+    private static String getMethodParameters(Method method) {
         StringBuilder params = new StringBuilder("(");
-        for (Parameter parameter : parameters) {
-            String parameterType = parameter.getName();
-            parameterType = type.contains("lang.") ? parameterType.substring(type.indexOf("lang.") + 5) : type;
-            params.append(parameterType + ", ");
+        Class<?>[] parametersTypes = method.getParameterTypes();
+        for (int i = 0; i < parametersTypes.length; i++){
+            params.append(parametersTypes[i].getTypeName() + ", ");
         }
         if (params.length() >= 2) {
             params.delete(params.length() - 2, params.length());
@@ -135,16 +134,19 @@ public class App {
             case ("Double"): {
                 printTypeForUpdate(isUpdateNeeded, type);
                 field.set(object, scanner.nextDouble());
+                scanner.nextLine();
                 break;
             }
             case ("Boolean"): {
                 printTypeForUpdate(isUpdateNeeded, type);
                 field.set(object, scanner.nextBoolean());
+                scanner.nextLine();
                 break;
             }
             case ("Long"): {
                 printTypeForUpdate(isUpdateNeeded, type);
                 field.set(object, scanner.nextLong());
+                scanner.nextLine();
                 break;
             }
         }
@@ -177,5 +179,36 @@ public class App {
             }
         }
     }
+
+    private static void callMethod() throws InvocationTargetException, IllegalAccessException {
+        System.out.println("---------------------\n" +
+                "Enter name of the method for call:");
+        String methodName = scanner.nextLine();
+        for (Method method : methods){
+            String fullMethodName = methodName + getMethodParameters(method);
+            if(fullMethodName.startsWith(method.getName())){
+                Object[] params = getParametersForMethodCall(method);
+                Object result =  method.invoke(object, params);
+                System.out.println("Method returned:\n" + result);
+                return;
+            }
+        }
+
+    }
+
+    private static Object[] getParametersForMethodCall(Method method) throws InvocationTargetException, IllegalAccessException {
+        Class<?>[] parametersTypes = method.getParameterTypes();
+        Object[] parameters = new Object[parametersTypes.length];
+        for (int i = 0; i < parametersTypes.length; i++){
+            Class<?> parameterType = parametersTypes[i];
+            if(parameterType.equals(int.class)){
+                System.out.println("Enter int value:");
+                parameters[i] = scanner.nextInt();
+            }
+
+        }
+        return parameters;
+    }
+
 
     }

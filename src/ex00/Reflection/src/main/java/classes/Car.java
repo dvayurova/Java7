@@ -18,8 +18,8 @@ public class Car {
         this.isElectric = isElectric;
     }
 
-    public boolean isNewCar(){
-        return year > 2020;
+    public boolean isNewerCar(int year){
+        return this.year > year;
     }
 
     @Override
