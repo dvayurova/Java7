@@ -1,19 +1,22 @@
-package logic;
-
-import classes.Car;
-import classes.User;
+package edu.school21.logic;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 
 public class Printer {
+
+    private static final String packageName = "edu.school21.classes";
     public static void printClasses() {
         System.out.println("Classes:");
-        String userClass = User.class.getName();
-        String carClass = Car.class.getName();
-        System.out.println(" - " + ObjectInfo.getClassName(userClass));
-        System.out.println(" - " + ObjectInfo.getClassName(carClass));
+        try {
+            Class<?>[] classes =  ClassGetter.getClasses(packageName);
+            for (Class<?> classInPackage : classes){
+                System.out.println("\t- " + ObjectInfo.getClassName(classInPackage.getName()));
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("---------------------\nEnter class name:");
     }
 

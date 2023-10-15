@@ -1,4 +1,4 @@
-package logic;
+package edu.school21.logic;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -42,7 +42,7 @@ public class ObjectInfo {
     }
 
     public static String getClassName(String className) {
-        return className.substring(className.indexOf(".") + 1);
+        return className.substring(className.indexOf("classes.") + 8);
     }
 
     public  String getObjectInfo(Object object) throws IllegalAccessException {

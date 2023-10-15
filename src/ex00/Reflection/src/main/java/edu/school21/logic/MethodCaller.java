@@ -1,4 +1,4 @@
-package logic;
+package edu.school21.logic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

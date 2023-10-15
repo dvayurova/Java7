@@ -1,6 +1,6 @@
-package app;
+package edu.school21.app;
 
-import logic.*;
+import edu.school21.logic.*;
 
 
 import java.lang.reflect.InvocationTargetException;
