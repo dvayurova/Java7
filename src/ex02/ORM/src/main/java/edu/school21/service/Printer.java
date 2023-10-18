@@ -7,16 +7,11 @@ import java.lang.reflect.Method;
 
 public class Printer {
 
-    private static final String packageName = "edu.school21.model";
-    public static void printClasses() {
+
+    public static void printClasses(Class<?>[] classes) {
         System.out.println("Classes:");
-        try {
-            Class<?>[] classes =  ClassGetter.getClasses(packageName);
-            for (Class<?> classInPackage : classes){
-                System.out.println("\t- " + ObjectInfo.getClassName(classInPackage.getName()));
-            }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        for (Class<?> classInPackage : classes){
+            System.out.println("\t- " + ObjectInfo.getClassName(classInPackage.getName()));
         }
         System.out.println("---------------------\nEnter class name:");
     }
@@ -31,7 +26,10 @@ public class Printer {
     }
 
 
+    public static void printQuery(String query) {
+        System.out.println("Generated SQL: " + query);
     }
+}
 
 
 
