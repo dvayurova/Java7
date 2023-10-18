@@ -8,16 +8,14 @@ import java.lang.reflect.Field;
 
 public class QueryCreator {
 
-    public static String createTableQuery(Class<?> clazz){
+    public static String createTableQuery(Class<?> clazz) {
         OrmEntity ormEntity = clazz.getAnnotation(OrmEntity.class);
         StringBuilder query = new StringBuilder("CREATE TABLE IF NOT EXISTS " + ormEntity.table() + " (");
         for (Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(OrmColumn.class)) {
                 OrmColumn ormColumn = field.getAnnotation(OrmColumn.class);
                 String columnName = ormColumn.name();
-                String fieldType = getSqlType(field.getType().getSimpleName());
-                System.out.println("columnName = " + columnName);
-                System.out.println("fieldType = " + fieldType);
+                String fieldType = getSqlType(field.getType().getSimpleName(), ormColumn);
                 query.append(columnName).append(" ").append(fieldType).append(", ");
             }
             if (field.isAnnotationPresent(OrmColumnId.class)) {
@@ -28,20 +26,80 @@ public class QueryCreator {
         query.append(")");
         return query.toString();
     }
-    public static String dropTableQuery(Class<?> clazz){
-            OrmEntity ormEntity = clazz.getAnnotation(OrmEntity.class);
-       return  "DROP TABLE IF EXISTS " + ormEntity.table();
+
+    public static String saveQuery(Object entity) throws IllegalAccessException {
+        OrmEntity ormEntity = entity.getClass().getAnnotation(OrmEntity.class);
+        StringBuilder query = new StringBuilder("INSERT INTO " + ormEntity.table() + " (");
+        StringBuilder values = new StringBuilder("VALUES (");
+        for (Field field : entity.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(OrmColumn.class)) {
+                field.setAccessible(true);
+                OrmColumn ormColumn = field.getAnnotation(OrmColumn.class);
+                query.append(ormColumn.name()).append(", ");
+                if (field.getType().getSimpleName().equals("String")) {
+                    values.append("\'" + field.get(entity) + "\', ");
+                } else {
+                    values.append(field.get(entity) + ", ");
+                }
+            }
+        }
+        query.delete(query.length() - 2, query.length());
+        query.append(") ");
+        values.delete(values.length() - 2, values.length());
+        query.append(values + ")");
+        return query.toString();
     }
 
-    private static String getSqlType(String type) {
+    public static String updateQuery(Object entity) throws IllegalAccessException {
+        OrmEntity ormEntity = entity.getClass().getAnnotation(OrmEntity.class);
+        StringBuilder query = new StringBuilder("UPDATE " + ormEntity.table() + " SET ");
+        StringBuilder where = new StringBuilder("WHERE id = ");
+        for (Field field : entity.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(OrmColumn.class)) {
+                field.setAccessible(true);
+                OrmColumn ormColumn = field.getAnnotation(OrmColumn.class);
+                query.append(ormColumn.name() + " = ");
+                if (field.getType().getSimpleName().equals("String")) {
+                    query.append("\'" + field.get(entity) + "\', ");
+                } else {
+                    query.append(field.get(entity) + ", ");
+                }
+            }
+            if (field.isAnnotationPresent(OrmColumnId.class)) {
+                field.setAccessible(true);
+                if (field.getType().getSimpleName().equals("String")) {
+                    where.append("\'" + field.get(entity) + "\', ");
+                } else {
+                    where.append(field.get(entity));
+                }
+            }
+        }
+        query.delete(query.length() - 2, query.length());
+        query.append(where);
+        return query.toString();
+    }
+
+    public static String dropTableQuery(Class<?> clazz) {
+        OrmEntity ormEntity = clazz.getAnnotation(OrmEntity.class);
+        return "DROP TABLE IF EXISTS " + ormEntity.table();
+    }
+
+    private static String getSqlType(String type, OrmColumn ormColumn) {
         switch (type) {
             case "String":
-                return "VARCHAR(100) NOT NULL";
+                return "VARCHAR(" + ormColumn.length() + ") NOT NULL";
             case "Integer":
                 return "INTEGER";
+            case "Double":
+                return "DOUBLE";
+            case "Boolean":
+                return "BOOLEAN";
+            case "Long":
+                return "BIGINT";
             default:
                 return "";
         }
     }
+
 
 }
