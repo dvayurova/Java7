@@ -29,7 +29,7 @@ public class FieldsSetter {
     }
 
     private static void setField(Field field, boolean isUpdateNeeded, Scanner scanner, Object object) throws IllegalAccessException {
-        String type = ObjectInfo.getFieldType(field);
+        String type = getFieldType(field);
         field.setAccessible(true);
         switch (type) {
             case ("String"): {
@@ -67,6 +67,11 @@ public class FieldsSetter {
         if (isUpdateNeeded) {
             System.out.println("Enter " + type + " value:");
         }
+    }
+
+    private static String getFieldType(Field field) {
+        String type = field.getType().getName();
+        return type.contains("lang.") ? type.substring(type.indexOf("lang.") + 5) : type;
     }
 }
 

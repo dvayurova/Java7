@@ -1,14 +1,16 @@
 package edu.school21.manager;
 
+import edu.school21.annotations.OrmColumn;
+import edu.school21.annotations.OrmColumnId;
 import edu.school21.annotations.OrmEntity;
 import edu.school21.service.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Scanner;
 
 public class OrmManager {
     private final Connection connection;
@@ -17,20 +19,6 @@ public class OrmManager {
     public OrmManager(Connection connection, Class<?>[] classes) {
         this.connection = connection;
         this.classes = classes;
-    }
-
-    public void tmp() {
-
-
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM simple_product;");
-            System.out.println("here.");
-            while (resultSet.next()) {
-                System.out.println(resultSet.getInt("id") + " " + resultSet.getString("productName") + " " + resultSet.getInt("price"));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void initializeTable(Object object) {
@@ -82,7 +70,7 @@ public class OrmManager {
             }
 
         } catch (IllegalAccessException | SQLException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
+            System.err.println("Failed to save. " + e.getMessage());
         }
     }
 
@@ -90,8 +78,31 @@ public class OrmManager {
         try {
             executeSqlQuery(QueryCreator.updateQuery(entity));
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            System.err.println("Failed to update. " + e.getMessage());
         }
+    }
+
+    public <T> T findById(Long id, Class<T> aClass) throws SQLException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Statement  statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(QueryCreator.findByIdQuery(id, aClass));
+        Object object = aClass.getDeclaredConstructor().newInstance();
+        if (resultSet.next()) {
+            for (Field field : aClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(OrmColumn.class)) {
+                    OrmColumn ormColumn = field.getAnnotation(OrmColumn.class);
+                    setField(field, object, resultSet.getObject(ormColumn.name()));
+                }
+                if (field.isAnnotationPresent(OrmColumnId.class)) {
+                    setField(field, object, id);
+                }
+            }
+        }
+        return (T) object;
+    }
+
+    private void setField(Field field, Object object, Object value) throws IllegalAccessException {
+        field.setAccessible(true);
+        field.set(object, value);
     }
 
 

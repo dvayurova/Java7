@@ -54,11 +54,11 @@ public class Program {
                     ormManager.save(object);
                     break;
                 case "update":
-                    FieldsSetter.updateObject(scanner, object);
-                    ormManager.update(object);
+                    updateObject(object.getClass(), scanner, ormManager);
                     break;
                 case "findById":
-                    ormManager.tmp();
+                    Object foundedObj = findById(object.getClass(), scanner, ormManager);
+                    System.out.println(foundedObj);
                     break;
                 case "exit":
                     break;
@@ -67,6 +67,31 @@ public class Program {
             }
         }
     }
+
+    private static void updateObject(Class<?> aClass, Scanner scanner, OrmManager ormManager){
+        Object object = findById(aClass, scanner, ormManager);
+        try {
+            FieldsSetter.updateObject(scanner, object);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        ormManager.update(object);
+    }
+
+    private static Object findById(Class<?> aClass, Scanner scanner, OrmManager ormManager){
+        System.out.println("Please enter id:");
+        Long id = scanner.nextLong();
+        scanner.nextLine();
+        Object object = null;
+        try {
+            object = ormManager.findById(id, aClass);
+        } catch (SQLException | NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException e) {
+            System.err.println("Failed to find. Check if id is correct and try again. " + e.getMessage());
+        }
+        return object;
+    }
+
 
     private static Connection connect() {
         DataSource dataSource = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.HSQL).build();
