@@ -68,7 +68,6 @@ public class OrmManager {
             } else {
                 throw new SQLException("Failed to retrieve generated keys for message");
             }
-
         } catch (IllegalAccessException | SQLException | NoSuchFieldException e) {
             System.err.println("Failed to save. " + e.getMessage());
         }

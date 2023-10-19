@@ -95,7 +95,7 @@ public class QueryCreator {
 
     private static String getFieldValue(Field field, Object entity) throws IllegalAccessException {
         if (field.getType().getSimpleName().equals("String")) {
-            return ("\'" + field.get(entity) + "\', ");
+            return ("\'" + field.get(entity) + "\'");
         } else {
             return (field.get(entity).toString());
         }
